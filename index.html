@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💷</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0e1a;
+    --bg-surface: rgba(15, 23, 42, 0.85);
+    --bg-card: rgba(30, 41, 69, 0.65);
+    --bg-input: rgba(15, 23, 42, 0.7);
+    --glass-border: rgba(100, 120, 180, 0.2);
+    --glass-glow: rgba(56, 99, 220, 0.08);
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #3b82f6;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-violet: #8b5cf6;
+    --accent-cyan: #06b6d4;
+    --green-deep: #059669;
+    --green-bg: rgba(16, 185, 129, 0.12);
+    --amber-bg: rgba(245, 158, 11, 0.12);
+    --rose-bg: rgba(244, 63, 94, 0.12);
+    --violet-bg: rgba(139, 92, 246, 0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ---- Auth Screen ---- */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    max-width: 420px;
+    width: 90%;
+  }
+
+  .auth-card h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .auth-card p {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+  }
+
+  .auth-card .logo {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  .btn-google {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 32px;
+    background: #fff;
+    color: #1f2937;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .btn-google:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  }
+
+  .btn-google svg { width: 22px; height: 22px; }
+
+  /* ---- App Layout ---- */
+  #app {
+    display: none;
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 120px;
+  }
+
+  /* ---- Header ---- */
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .app-header h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    padding: 6px 14px 6px 6px;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  .user-pill img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
+
+  .btn-signout {
+    padding: 8px 18px;
+    background: rgba(244, 63, 94, 0.15);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: var(--accent-rose);
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn-signout:hover { background: rgba(244, 63, 94, 0.25); }
+
+  /* ---- Summary Bar ---- */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .summary-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .summary-card.salary::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .summary-card.debits::before { background: linear-gradient(90deg, var(--accent-rose), var(--accent-amber)); }
+  .summary-card.transfers::before { background: linear-gradient(90deg, var(--accent-violet), var(--accent-blue)); }
+  .summary-card.remaining::before { background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan)); }
+  .summary-card.spent::before { background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose)); }
+
+  .summary-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .summary-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .summary-card.salary .summary-value { color: var(--accent-blue); }
+  .summary-card.debits .summary-value { color: var(--accent-rose); }
+  .summary-card.transfers .summary-value { color: var(--accent-violet); }
+  .summary-card.remaining .summary-value { color: var(--accent-emerald); }
+  .summary-card.remaining.negative .summary-value { color: var(--accent-rose); }
+  .summary-card.spent .summary-value { color: var(--accent-amber); }
+
+  /* ---- Salary Input ---- */
+  .salary-section {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .salary-section label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .salary-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+    max-width: 280px;
+  }
+
+  .salary-input-wrap::before {
+    content: '£';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent-blue);
+    font-size: 1.1rem;
+  }
+
+  .salary-input-wrap input {
+    width: 100%;
+    padding: 12px 16px 12px 32px;
+    background: var(--bg-input);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .salary-input-wrap input:focus {
+    border-color: var(--accent-blue);
+  }
+
+  .salary-date-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-left: auto;
+  }
+
+  .salary-date-wrap {
+    min-width: 140px;
+  }
+
+  .salary-date-wrap input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .salary-date-wrap input:focus {
+    border-color: var(--accent-blue);
+  }
+
+  /* ---- Section ---- */
+  .section {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .section-title .dot.rose { background: var(--accent-rose); box-shadow: 0 0 8px var(--accent-rose); }
+  .section-title .dot.violet { background: var(--accent-violet); box-shadow: 0 0 8px var(--accent-violet); }
+  .section-title .dot.amber { background: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber); }
+
+  .section-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: var(--accent-blue);
+  }
+
+  .btn-add {
+    padding: 8px 18px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: var(--accent-blue);
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-add:hover { background: rgba(59, 130, 246, 0.25); }
+
+  /* ---- Expense Table ---- */
+  .expense-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .expense-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 8px 10px 12px;
+    border-bottom: 1px solid var(--glass-border);
+    white-space: nowrap;
+  }
+
+  .expense-table th.right { text-align: right; }
+
+  .expense-table td {
+    padding: 6px 6px;
+    vertical-align: middle;
+  }
+
+  .expense-table tr.expense-row {
+    transition: background 0.12s;
+  }
+
+  .expense-table tr.expense-row:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .expense-table input, .expense-table select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .expense-table input:focus, .expense-table select:focus {
+    border-color: var(--accent-blue);
+  }
+
+  .expense-table input.cost-input {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .expense-table input[type="number"] {
+    width: 70px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .expense-table select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  .expense-table select option {
+    background: #1e293b;
+    color: var(--text-primary);
+  }
+
+  .running-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: right;
+    padding-right: 12px !important;
+    white-space: nowrap;
+  }
+
+  .btn-delete {
+    width: 32px;
+    height: 32px;
+    background: rgba(244, 63, 94, 0.1);
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    border-radius: 8px;
+    color: var(--accent-rose);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .btn-delete:hover { background: rgba(244, 63, 94, 0.25); }
+
+  /* ---- Date Badge Colours ---- */
+  .date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .date-badge .indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .date-badge.past {
+    background: var(--green-bg);
+    color: var(--accent-emerald);
+  }
+  .date-badge.past .indicator { background: var(--accent-emerald); }
+
+  .date-badge.today {
+    background: var(--rose-bg);
+    color: var(--accent-rose);
+    animation: pulse-badge 2s infinite;
+  }
+  .date-badge.today .indicator { background: var(--accent-rose); box-shadow: 0 0 6px var(--accent-rose); }
+
+  .date-badge.soon {
+    background: var(--amber-bg);
+    color: var(--accent-amber);
+  }
+  .date-badge.soon .indicator { background: var(--accent-amber); }
+
+  .date-badge.upcoming {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-blue);
+  }
+  .date-badge.upcoming .indicator { background: var(--accent-blue); }
+
+  .date-badge.far {
+    background: rgba(100, 116, 139, 0.1);
+    color: var(--text-muted);
+  }
+  .date-badge.far .indicator { background: var(--text-muted); }
+
+  @keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* ---- Yearly Alert ---- */
+  .yearly-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    margin-top: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .yearly-alert.warning {
+    background: var(--amber-bg);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--accent-amber);
+  }
+
+  .yearly-alert.danger {
+    background: var(--rose-bg);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: var(--accent-rose);
+  }
+
+  .yearly-alerts-container {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ---- Responsive ---- */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (max-width: 900px) {
+    .expense-table th, .expense-table td { font-size: 0.8rem; }
+    .summary-value { font-size: 1.2rem; }
+  }
+
+  /* ---- Loading / Save Indicator ---- */
+  .save-indicator {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 10px 20px;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent-emerald);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  .save-indicator.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---- Animations ---- */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section, .summary-card, .salary-section {
+    animation: fadeIn 0.4s ease both;
+  }
+
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.1s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+
+  /* ---- Scrollbar ---- */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(100, 120, 180, 0.3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="logo">💷</div>
+    <h1>Finance Tracker</h1>
+    <p>Sign in with your Google account to manage your monthly finances securely.</p>
+    <button class="btn-google" onclick="signIn()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header class="app-header">
+    <h1>💷 Finance Tracker</h1>
+    <div class="header-right">
+      <div class="user-pill" id="user-pill"></div>
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Summary Cards -->
+  <div class="summary-bar">
+    <div class="summary-card salary">
+      <div class="summary-label">Monthly Salary</div>
+      <div class="summary-value" id="sum-salary">£0.00</div>
+    </div>
+    <div class="summary-card debits">
+      <div class="summary-label">Direct Debits</div>
+      <div class="summary-value" id="sum-debits">£0.00</div>
+    </div>
+    <div class="summary-card transfers">
+      <div class="summary-label">Joint Account</div>
+      <div class="summary-value" id="sum-transfers">£0.00</div>
+    </div>
+    <div class="summary-card spent">
+      <div class="summary-label">Spent So Far This Month</div>
+      <div class="summary-value" id="sum-spent">£0.00</div>
+    </div>
+    <div class="summary-card remaining" id="remaining-card">
+      <div class="summary-label">Remaining Balance</div>
+      <div class="summary-value" id="sum-remaining">£0.00</div>
+    </div>
+  </div>
+
+  <!-- Salary -->
+  <div class="salary-section">
+    <label>Monthly Salary</label>
+    <div class="salary-input-wrap">
+      <input type="text" id="salary-input" placeholder="0.00" inputmode="decimal">
+    </div>
+    <span class="salary-date-label">Pay day (day of month):</span>
+    <div class="salary-date-wrap">
+      <input type="number" id="payday-input" min="1" max="31" placeholder="25">
+    </div>
+  </div>
+
+  <!-- Direct Debits -->
+  <div class="section" id="section-debits">
+    <div class="section-header">
+      <div class="section-title"><span class="dot rose"></span> Direct Debits</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="section-total" id="total-debits">£0.00</div>
+        <button class="btn-add" onclick="addRow('debits')">＋ Add</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="expense-table" id="table-debits">
+        <thead>
+          <tr>
+            <th style="width:25%">Name</th>
+            <th style="width:16%">Bank</th>
+            <th style="width:12%" class="right">Cost (£)</th>
+            <th style="width:10%">Day</th>
+            <th style="width:14%">Status</th>
+            <th style="width:14%" class="right">Running Total</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-debits"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Manual Transfers -->
+  <div class="section" id="section-transfers">
+    <div class="section-header">
+      <div class="section-title"><span class="dot violet"></span> Manual Transfers (Joint Account)</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="section-total" id="total-transfers">£0.00</div>
+        <button class="btn-add" onclick="addRow('transfers')">＋ Add</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="expense-table" id="table-transfers">
+        <thead>
+          <tr>
+            <th style="width:25%">Name</th>
+            <th style="width:16%">Bank</th>
+            <th style="width:12%" class="right">Cost (£)</th>
+            <th style="width:10%">Day</th>
+            <th style="width:14%">Status</th>
+            <th style="width:14%" class="right">Running Total</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-transfers"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Yearly Expenses -->
+  <div class="section" id="section-yearly">
+    <div class="section-header">
+      <div class="section-title"><span class="dot amber"></span> Annual Expenses</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="section-total" id="total-yearly">£0.00</div>
+        <button class="btn-add" onclick="addRow('yearly')">＋ Add</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="expense-table" id="table-yearly">
+        <thead>
+          <tr>
+            <th style="width:25%">Name</th>
+            <th style="width:16%">Bank</th>
+            <th style="width:12%" class="right">Cost (£)</th>
+            <th style="width:18%">Due Date</th>
+            <th style="width:14%">Status</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-yearly"></tbody>
+      </table>
+    </div>
+    <div class="yearly-alerts-container" id="yearly-alerts"></div>
+  </div>
+</div>
+
+<!-- Save Indicator -->
+<div class="save-indicator" id="save-indicator">✓ Saved</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ===================================================================
+// FIREBASE CONFIG — Replace these with your own Firebase project values
+// ===================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAa3mSk8qkyKtx0owSauWNGVc2dNO3ZzGg",
+  authDomain: "finance-tracker-6dd81.firebaseapp.com",
+  projectId: "finance-tracker-6dd81",
+  storageBucket: "finance-tracker-6dd81.firebasestorage.app",
+  messagingSenderId: "86551816399",
+  appId: "1:86551816399:web:2b1a6fa87b340f256fefba"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let saveTimeout = null;
+let data = {
+  salary: 0,
+  payday: 25,
+  debits: [],
+  transfers: [],
+  yearly: []
+};
+
+// ---- Auth ----
+function signIn() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err => {
+    console.error('Sign-in error:', err);
+    alert('Sign-in failed: ' + err.message);
+  });
+}
+
+function signOut() {
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('user-pill').innerHTML =
+      `<img src="${user.photoURL || ''}" alt="" onerror="this.style.display='none'">
+       <span>${user.displayName || user.email}</span>`;
+    loadData();
+  } else {
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+// ---- Firestore Load / Save ----
+async function loadData() {
+  if (!currentUser) return;
+  try {
+    const doc = await db.collection('finance_tracker').doc(currentUser.uid).get();
+    if (doc.exists) {
+      const d = doc.data();
+      data.salary = d.salary || 0;
+      data.payday = d.payday || 25;
+      data.debits = d.debits || [];
+      data.transfers = d.transfers || [];
+      data.yearly = d.yearly || [];
+    }
+  } catch (err) {
+    console.error('Load error:', err);
+  }
+  renderAll();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => saveData(), 800);
+}
+
+async function saveData() {
+  if (!currentUser) return;
+  try {
+    await db.collection('finance_tracker').doc(currentUser.uid).set({
+      salary: data.salary,
+      payday: data.payday,
+      debits: data.debits,
+      transfers: data.transfers,
+      yearly: data.yearly,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showSaveIndicator();
+  } catch (err) {
+    console.error('Save error:', err);
+  }
+}
+
+function showSaveIndicator() {
+  const el = document.getElementById('save-indicator');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ---- Rendering ----
+function renderAll() {
+  document.getElementById('salary-input').value = data.salary ? data.salary.toFixed(2) : '';
+  document.getElementById('payday-input').value = data.payday || '';
+  renderTable('debits');
+  renderTable('transfers');
+  renderTable('yearly');
+  recalculate();
+}
+
+function renderTable(type) {
+  const tbody = document.getElementById(`tbody-${type}`);
+  tbody.innerHTML = '';
+
+  const items = data[type];
+  if (!items.length) {
+    const colspan = type === 'yearly' ? 6 : 7;
+    tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
+    return;
+  }
+
+  // Sort by day/date for running totals
+  const sorted = items.map((item, i) => ({ ...item, _origIdx: i }));
+  if (type !== 'yearly') {
+    sorted.sort((a, b) => (a.day || 0) - (b.day || 0));
+  }
+
+  let runningTotal = 0;
+
+  sorted.forEach((item) => {
+    const idx = item._origIdx;
+    const tr = document.createElement('tr');
+    tr.className = 'expense-row';
+
+    if (type === 'yearly') {
+      const statusInfo = getYearlyStatus(item.dueDate);
+      tr.innerHTML = `
+        <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Car Insurance" onchange="updateField('${type}',${idx},'name',this.value)"></td>
+        <td><input type="text" value="${esc(item.bank)}" placeholder="e.g. Barclays" onchange="updateField('${type}',${idx},'bank',this.value)"></td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
+        <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
+        <td>${statusInfo.badge}</td>
+        <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
+      `;
+    } else {
+      runningTotal += (item.cost || 0);
+      const statusInfo = getMonthlyStatus(item.day);
+      tr.innerHTML = `
+        <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Netflix" onchange="updateField('${type}',${idx},'name',this.value)"></td>
+        <td><input type="text" value="${esc(item.bank)}" placeholder="e.g. Monzo" onchange="updateField('${type}',${idx},'bank',this.value)"></td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
+        <td><input type="number" min="1" max="31" value="${item.day || ''}" placeholder="1" onchange="updateDay('${type}',${idx},this.value)"></td>
+        <td>${statusInfo.badge}</td>
+        <td class="running-total">£${runningTotal.toFixed(2)}</td>
+        <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
+      `;
+    }
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ---- Date Status Logic ----
+function getMonthlyStatus(day) {
+  if (!day) return { badge: '<span class="date-badge far"><span class="indicator"></span>No date</span>', class: 'far' };
+
+  const now = new Date();
+  const today = now.getDate();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // Work out the next occurrence of this day
+  let dueDate = new Date(currentYear, currentMonth, day);
+  // If day has already passed this month, it's "paid"
+  if (day < today) {
+    return { badge: `<span class="date-badge past"><span class="indicator"></span>${getOrdinal(day)} ✓ Paid</span>`, class: 'past' };
+  } else if (day === today) {
+    return { badge: `<span class="date-badge today"><span class="indicator"></span>${getOrdinal(day)} — TODAY</span>`, class: 'today' };
+  } else if (day <= today + 3) {
+    return { badge: `<span class="date-badge soon"><span class="indicator"></span>${getOrdinal(day)} — ${day - today}d away</span>`, class: 'soon' };
+  } else if (day <= today + 7) {
+    return { badge: `<span class="date-badge upcoming"><span class="indicator"></span>${getOrdinal(day)} — ${day - today}d away</span>`, class: 'upcoming' };
+  } else {
+    return { badge: `<span class="date-badge far"><span class="indicator"></span>${getOrdinal(day)}</span>`, class: 'far' };
+  }
+}
+
+function getYearlyStatus(dateStr) {
+  if (!dateStr) return { badge: '<span class="date-badge far"><span class="indicator"></span>No date</span>', class: 'far', daysUntil: Infinity };
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const due = new Date(dateStr + 'T00:00:00');
+  const diffMs = due - now;
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { badge: `<span class="date-badge past"><span class="indicator"></span>Passed</span>`, class: 'past', daysUntil: diffDays };
+  } else if (diffDays === 0) {
+    return { badge: `<span class="date-badge today"><span class="indicator"></span>TODAY</span>`, class: 'today', daysUntil: 0 };
+  } else if (diffDays <= 30) {
+    return { badge: `<span class="date-badge today"><span class="indicator"></span>${diffDays}d away</span>`, class: 'today', daysUntil: diffDays };
+  } else if (diffDays <= 90) {
+    return { badge: `<span class="date-badge soon"><span class="indicator"></span>${diffDays}d away</span>`, class: 'soon', daysUntil: diffDays };
+  } else {
+    return { badge: `<span class="date-badge far"><span class="indicator"></span>${diffDays}d away</span>`, class: 'far', daysUntil: diffDays };
+  }
+}
+
+function getOrdinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+// ---- Calculations ----
+function recalculate() {
+  const totalDebits = data.debits.reduce((s, r) => s + (r.cost || 0), 0);
+  const totalTransfers = data.transfers.reduce((s, r) => s + (r.cost || 0), 0);
+  const remaining = data.salary - totalDebits - totalTransfers;
+
+  // Spent so far: sum of debits and transfers whose day has passed
+  const today = new Date().getDate();
+  const spentDebits = data.debits.filter(r => r.day && r.day <= today).reduce((s, r) => s + (r.cost || 0), 0);
+  const spentTransfers = data.transfers.reduce((s, r) => s + (r.cost || 0), 0); // Manual transfers usually all go out at once
+  const spent = spentDebits + spentTransfers;
+
+  const totalYearly = data.yearly.reduce((s, r) => s + (r.cost || 0), 0);
+
+  document.getElementById('sum-salary').textContent = `£${data.salary.toFixed(2)}`;
+  document.getElementById('sum-debits').textContent = `£${totalDebits.toFixed(2)}`;
+  document.getElementById('sum-transfers').textContent = `£${totalTransfers.toFixed(2)}`;
+  document.getElementById('sum-spent').textContent = `£${spent.toFixed(2)}`;
+  document.getElementById('sum-remaining').textContent = `£${remaining.toFixed(2)}`;
+  document.getElementById('total-debits').textContent = `£${totalDebits.toFixed(2)}`;
+  document.getElementById('total-transfers').textContent = `£${totalTransfers.toFixed(2)}`;
+  document.getElementById('total-yearly').textContent = `£${totalYearly.toFixed(2)}`;
+
+  const card = document.getElementById('remaining-card');
+  card.classList.toggle('negative', remaining < 0);
+
+  // Yearly alerts
+  renderYearlyAlerts();
+}
+
+function renderYearlyAlerts() {
+  const container = document.getElementById('yearly-alerts');
+  container.innerHTML = '';
+
+  data.yearly.forEach(item => {
+    if (!item.dueDate) return;
+    const status = getYearlyStatus(item.dueDate);
+    if (status.daysUntil >= 0 && status.daysUntil <= 90) {
+      const alertClass = status.daysUntil <= 30 ? 'danger' : 'warning';
+      const icon = status.daysUntil <= 30 ? '🔴' : '🟡';
+      const div = document.createElement('div');
+      div.className = `yearly-alert ${alertClass}`;
+      div.innerHTML = `${icon} <strong>${esc(item.name || 'Unnamed')}</strong> — £${(item.cost || 0).toFixed(2)} due in ${status.daysUntil} days (${formatDate(item.dueDate)})`;
+      container.appendChild(div);
+    }
+  });
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// ---- CRUD ----
+function addRow(type) {
+  if (type === 'yearly') {
+    data[type].push({ name: '', bank: '', cost: 0, dueDate: '' });
+  } else {
+    data[type].push({ name: '', bank: '', cost: 0, day: null });
+  }
+  renderTable(type);
+  recalculate();
+  scheduleSave();
+}
+
+function deleteRow(type, idx) {
+  data[type].splice(idx, 1);
+  renderTable(type);
+  recalculate();
+  scheduleSave();
+}
+
+function updateField(type, idx, field, value) {
+  data[type][idx][field] = value;
+  if (type === 'yearly') renderYearlyAlerts();
+  scheduleSave();
+}
+
+function updateCost(type, idx, value) {
+  data[type][idx].cost = parseFloat(value) || 0;
+  renderTable(type);
+  recalculate();
+  scheduleSave();
+}
+
+function updateDay(type, idx, value) {
+  data[type][idx].day = parseInt(value) || null;
+  renderTable(type);
+  recalculate();
+  scheduleSave();
+}
+
+// ---- Salary input ----
+document.getElementById('salary-input').addEventListener('input', function () {
+  data.salary = parseFloat(this.value) || 0;
+  recalculate();
+  scheduleSave();
+});
+
+document.getElementById('payday-input').addEventListener('input', function () {
+  data.payday = parseInt(this.value) || 25;
+  scheduleSave();
+});
+
+// ---- Helpers ----
+function esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

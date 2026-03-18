@@ -8,29 +8,31 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #0a0e1a;
-    --bg-surface: rgba(15, 23, 42, 0.85);
-    --bg-card: rgba(30, 41, 69, 0.65);
-    --bg-input: rgba(15, 23, 42, 0.7);
-    --glass-border: rgba(100, 120, 180, 0.2);
+    --bg-deep: #070b14;
+    --bg-surface: rgba(8, 14, 30, 0.72);
+    --bg-card: rgba(12, 20, 42, 0.55);
+    --bg-input: rgba(8, 14, 30, 0.6);
+    --glass-border: rgba(140, 170, 230, 0.18);
+    --glass-highlight: rgba(180, 210, 255, 0.12);
     --glass-glow: rgba(56, 99, 220, 0.08);
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --accent-blue: #3b82f6;
-    --accent-emerald: #10b981;
-    --accent-amber: #f59e0b;
-    --accent-rose: #f43f5e;
-    --accent-violet: #8b5cf6;
-    --accent-cyan: #06b6d4;
-    --green-deep: #059669;
-    --green-bg: rgba(16, 185, 129, 0.12);
-    --amber-bg: rgba(245, 158, 11, 0.12);
-    --rose-bg: rgba(244, 63, 94, 0.12);
-    --violet-bg: rgba(139, 92, 246, 0.12);
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --text-primary: #e8edf5;
+    --text-secondary: #a0b1c8;
+    --text-muted: #6b7f99;
+    --accent-blue: #4d9aff;
+    --accent-emerald: #2dd4a0;
+    --accent-amber: #ffb833;
+    --accent-rose: #ff5277;
+    --accent-violet: #a67cff;
+    --accent-cyan: #22d3ee;
+    --green-deep: #0ea573;
+    --green-bg: rgba(45, 212, 160, 0.14);
+    --amber-bg: rgba(255, 184, 51, 0.14);
+    --rose-bg: rgba(255, 82, 119, 0.14);
+    --violet-bg: rgba(166, 124, 255, 0.14);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(140, 170, 230, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(180, 210, 255, 0.08);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,11 +48,20 @@
   body::before {
     content: '';
     position: fixed;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 70%);
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('bg.png') center center / cover no-repeat;
+    filter: blur(2px) brightness(0.45);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, rgba(7, 11, 20, 0.55) 0%, rgba(7, 11, 20, 0.3) 40%, rgba(7, 11, 20, 0.6) 100%);
     z-index: 0;
     pointer-events: none;
   }
@@ -68,12 +79,15 @@
 
   .auth-card {
     background: var(--bg-card);
-    backdrop-filter: blur(24px);
+    backdrop-filter: blur(40px) saturate(1.4);
+    -webkit-backdrop-filter: blur(40px) saturate(1.4);
     border: 1px solid var(--glass-border);
+    border-top-color: var(--glass-highlight);
+    border-left-color: var(--glass-highlight);
     border-radius: 20px;
     padding: 48px 40px;
     text-align: center;
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-shadow);
     max-width: 420px;
     width: 90%;
   }
@@ -161,12 +175,15 @@
     align-items: center;
     gap: 8px;
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(30px) saturate(1.3);
+    -webkit-backdrop-filter: blur(30px) saturate(1.3);
     border: 1px solid var(--glass-border);
+    border-top-color: var(--glass-highlight);
     padding: 6px 14px 6px 6px;
     border-radius: 50px;
     font-size: 0.82rem;
     color: var(--text-secondary);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
 
   .user-pill img {
@@ -177,18 +194,22 @@
 
   .btn-signout {
     padding: 8px 18px;
-    background: rgba(244, 63, 94, 0.15);
-    border: 1px solid rgba(244, 63, 94, 0.3);
+    background: rgba(255, 82, 119, 0.12);
+    border: 1px solid rgba(255, 82, 119, 0.25);
     color: var(--accent-rose);
     border-radius: 50px;
     font-family: inherit;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
+    backdrop-filter: blur(8px);
   }
 
-  .btn-signout:hover { background: rgba(244, 63, 94, 0.25); }
+  .btn-signout:hover {
+    background: rgba(255, 82, 119, 0.22);
+    box-shadow: 0 0 12px rgba(255, 82, 119, 0.15);
+  }
 
   /* ---- Summary Bar ---- */
   .summary-bar {
@@ -200,11 +221,14 @@
 
   .summary-card {
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(36px) saturate(1.4);
+    -webkit-backdrop-filter: blur(36px) saturate(1.4);
     border: 1px solid var(--glass-border);
+    border-top-color: var(--glass-highlight);
+    border-left-color: var(--glass-highlight);
     border-radius: var(--radius);
     padding: 20px 24px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-shadow);
     position: relative;
     overflow: hidden;
   }
@@ -247,12 +271,15 @@
   /* ---- Salary Input ---- */
   .salary-section {
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(36px) saturate(1.4);
+    -webkit-backdrop-filter: blur(36px) saturate(1.4);
     border: 1px solid var(--glass-border);
+    border-top-color: var(--glass-highlight);
+    border-left-color: var(--glass-highlight);
     border-radius: var(--radius);
     padding: 20px 24px;
     margin-bottom: 28px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-shadow);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -287,19 +314,22 @@
   .salary-input-wrap input {
     width: 100%;
     padding: 12px 16px 12px 32px;
-    background: var(--bg-input);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
+    background: rgba(8, 14, 30, 0.5);
+    border: 1px solid rgba(140, 170, 230, 0.12);
+    border-top-color: rgba(180, 210, 255, 0.08);
+    border-radius: 50px;
     color: var(--text-primary);
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.1rem;
     font-weight: 600;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    backdrop-filter: blur(8px);
   }
 
   .salary-input-wrap input:focus {
-    border-color: var(--accent-blue);
+    border-color: rgba(77, 154, 255, 0.5);
+    box-shadow: 0 0 12px rgba(77, 154, 255, 0.15);
   }
 
   .salary-date-label {
@@ -361,10 +391,11 @@
     align-items: center;
     border-radius: 50px;
     overflow: hidden;
-    border: 1px solid var(--glass-border);
-    background: var(--bg-input);
+    border: 1px solid rgba(140, 170, 230, 0.12);
+    background: rgba(8, 14, 30, 0.5);
     cursor: pointer;
     flex-shrink: 0;
+    backdrop-filter: blur(8px);
   }
 
   .direction-toggle .toggle-opt {
@@ -418,12 +449,15 @@
   /* ---- Section ---- */
   .section {
     background: var(--bg-card);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(36px) saturate(1.4);
+    -webkit-backdrop-filter: blur(36px) saturate(1.4);
     border: 1px solid var(--glass-border);
+    border-top-color: var(--glass-highlight);
+    border-left-color: var(--glass-highlight);
     border-radius: var(--radius);
     padding: 24px;
     margin-bottom: 28px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-shadow);
   }
 
   .section-header {
@@ -467,21 +501,25 @@
 
   .btn-add {
     padding: 8px 18px;
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(77, 154, 255, 0.12);
+    border: 1px solid rgba(77, 154, 255, 0.25);
     color: var(--accent-blue);
     border-radius: 50px;
     font-family: inherit;
     font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
     display: flex;
     align-items: center;
     gap: 6px;
+    backdrop-filter: blur(8px);
   }
 
-  .btn-add:hover { background: rgba(59, 130, 246, 0.25); }
+  .btn-add:hover {
+    background: rgba(77, 154, 255, 0.22);
+    box-shadow: 0 0 14px rgba(77, 154, 255, 0.15);
+  }
 
   /* ---- Expense Table ---- */
   .expense-table {
@@ -513,24 +551,27 @@
   }
 
   .expense-table tr.expense-row:hover {
-    background: rgba(255,255,255,0.02);
+    background: rgba(140, 170, 230, 0.04);
   }
 
   .expense-table input, .expense-table select {
     width: 100%;
     padding: 10px 12px;
-    background: var(--bg-input);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
+    background: rgba(8, 14, 30, 0.5);
+    border: 1px solid rgba(140, 170, 230, 0.12);
+    border-top-color: rgba(180, 210, 255, 0.08);
+    border-radius: 50px;
     color: var(--text-primary);
     font-family: inherit;
     font-size: 0.88rem;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    backdrop-filter: blur(8px);
   }
 
   .expense-table input:focus, .expense-table select:focus {
-    border-color: var(--accent-blue);
+    border-color: rgba(77, 154, 255, 0.5);
+    box-shadow: 0 0 12px rgba(77, 154, 255, 0.15);
   }
 
   .expense-table input.cost-input {
@@ -555,7 +596,7 @@
   }
 
   .expense-table select option {
-    background: #1e293b;
+    background: #0c1428;
     color: var(--text-primary);
   }
 
@@ -572,20 +613,24 @@
   .btn-delete {
     width: 32px;
     height: 32px;
-    background: rgba(244, 63, 94, 0.1);
-    border: 1px solid rgba(244, 63, 94, 0.2);
-    border-radius: 8px;
+    background: rgba(255, 82, 119, 0.1);
+    border: 1px solid rgba(255, 82, 119, 0.2);
+    border-radius: 50%;
     color: var(--accent-rose);
     font-size: 1.1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
     flex-shrink: 0;
+    backdrop-filter: blur(8px);
   }
 
-  .btn-delete:hover { background: rgba(244, 63, 94, 0.25); }
+  .btn-delete:hover {
+    background: rgba(255, 82, 119, 0.25);
+    box-shadow: 0 0 12px rgba(255, 82, 119, 0.2);
+  }
 
   /* ---- Date Badge Colours ---- */
   .date-badge {
@@ -692,13 +737,15 @@
     right: 24px;
     padding: 10px 20px;
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(30px) saturate(1.3);
+    -webkit-backdrop-filter: blur(30px) saturate(1.3);
     border: 1px solid var(--glass-border);
+    border-top-color: var(--glass-highlight);
     border-radius: 50px;
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--accent-emerald);
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-shadow);
     opacity: 0;
     transform: translateY(10px);
     transition: opacity 0.3s, transform 0.3s;

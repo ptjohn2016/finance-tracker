@@ -572,6 +572,25 @@
     vertical-align: middle;
   }
 
+  /* Yearly table: ensure status never overlaps due date */
+  .yearly-table {
+    table-layout: fixed;
+  }
+  .yearly-table th:nth-child(1),
+  .yearly-table td:nth-child(1) { width: 16%; }
+  .yearly-table th:nth-child(2),
+  .yearly-table td:nth-child(2) { width: 16%; }
+  .yearly-table th:nth-child(3),
+  .yearly-table td:nth-child(3) { width: 11%; }
+  .yearly-table th:nth-child(4),
+  .yearly-table td:nth-child(4) { width: 10%; }
+  .yearly-table th:nth-child(5),
+  .yearly-table td:nth-child(5) { width: 16%; }
+  .yearly-table th:nth-child(6),
+  .yearly-table td:nth-child(6) { width: 18%; overflow: hidden; }
+  .yearly-table th:nth-child(7),
+  .yearly-table td:nth-child(7) { width: 36px; }
+
   .expense-table tr.expense-row {
     transition: background 0.12s;
   }
@@ -1001,15 +1020,15 @@
       </div>
     </div>
     <div class="table-scroll">
-      <table class="expense-table" id="table-yearly">
+      <table class="expense-table yearly-table" id="table-yearly">
         <thead>
           <tr>
-            <th style="width:16%">Name</th>
-            <th style="width:16%">Description</th>
-            <th style="width:11%">Bank</th>
-            <th style="width:10%" class="right">Cost (£)</th>
-            <th style="width:15%">Due Date</th>
-            <th style="width:18%">Status</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Bank</th>
+            <th class="right">Cost (£)</th>
+            <th>Due Date</th>
+            <th>Status</th>
             <th style="width:36px"></th>
           </tr>
         </thead>

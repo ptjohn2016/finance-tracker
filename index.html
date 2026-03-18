@@ -151,17 +151,43 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 28px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 12px;
   }
 
-  .app-header h1 {
-    font-size: 1.6rem;
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+    flex-shrink: 0;
+  }
+
+  .brand-text h1 {
+    font-size: 1.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-sub {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 1px;
   }
 
   .header-right {
@@ -699,22 +725,79 @@
   }
 
   .yearly-alert.warning {
-    background: var(--amber-bg);
-    border: 1px solid rgba(217, 119, 6, 0.2);
+    background: rgba(217, 119, 6, 0.1);
+    border: 1px solid rgba(217, 119, 6, 0.25);
+    border-left: 4px solid var(--accent-amber);
     color: var(--accent-amber);
   }
 
   .yearly-alert.danger {
-    background: var(--rose-bg);
-    border: 1px solid rgba(220, 38, 38, 0.2);
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    border-left: 4px solid var(--accent-rose);
     color: var(--accent-rose);
   }
 
   .yearly-alerts-container {
-    margin-top: 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .yearly-alerts-container.top-alerts {
+    margin-bottom: 20px;
+  }
+
+  .yearly-alerts-container.top-alerts:empty {
+    display: none;
+    margin: 0;
+  }
+
+  .yearly-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(30px) saturate(1.2);
+    -webkit-backdrop-filter: blur(30px) saturate(1.2);
+  }
+
+  .yearly-alert .alert-days {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 1.3rem;
+    line-height: 1;
+    min-width: 42px;
+    text-align: center;
+  }
+
+  .yearly-alert .alert-days small {
+    display: block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.8;
+  }
+
+  .yearly-alert .alert-detail {
+    flex: 1;
+  }
+
+  .yearly-alert .alert-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .yearly-alert .alert-meta {
+    font-size: 0.78rem;
+    font-weight: 500;
+    opacity: 0.75;
+    margin-top: 2px;
   }
 
   /* ---- Responsive ---- */
@@ -794,12 +877,28 @@
 <!-- MAIN APP -->
 <div id="app">
   <header class="app-header">
-    <h1>💷 Finance Tracker</h1>
+    <div class="header-brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="6" width="24" height="18" rx="3" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M2 12h24" stroke="currentColor" stroke-width="2"/>
+          <circle cx="20" cy="18" r="2" fill="currentColor"/>
+          <path d="M6 2v4M22 2v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Finance Tracker</h1>
+        <p class="brand-sub" id="brand-month"></p>
+      </div>
+    </div>
     <div class="header-right">
       <div class="user-pill" id="user-pill"></div>
       <button class="btn-signout" onclick="signOut()">Sign Out</button>
     </div>
   </header>
+
+  <!-- Annual Payment Alerts (prominent, top of page) -->
+  <div class="yearly-alerts-container top-alerts" id="yearly-alerts"></div>
 
   <!-- Summary Cards -->
   <div class="summary-bar">
@@ -919,7 +1018,6 @@
         <tbody id="tbody-yearly"></tbody>
       </table>
     </div>
-    <div class="yearly-alerts-container" id="yearly-alerts"></div>
   </div>
 </div>
 
@@ -1104,6 +1202,10 @@ function setDirection(type, idx, dir) {
 
 function renderAll() {
   document.getElementById('salary-input').value = data.salary ? data.salary.toFixed(2) : '';
+  // Set brand subtitle to current month/year
+  const now = new Date();
+  const monthYear = now.toLocaleString('en-GB', { month: 'long', year: 'numeric' });
+  document.getElementById('brand-month').textContent = monthYear;
   updatePaydayBadge();
   renderTable('debits');
   renderTable('transfers');
@@ -1288,17 +1390,30 @@ function renderYearlyAlerts() {
   const container = document.getElementById('yearly-alerts');
   container.innerHTML = '';
 
+  const alerts = [];
   data.yearly.forEach(item => {
     if (!item.dueDate) return;
     const status = getYearlyStatus(item.dueDate);
     if (status.daysUntil >= 0 && status.daysUntil <= 90) {
-      const alertClass = status.daysUntil <= 30 ? 'danger' : 'warning';
-      const icon = status.daysUntil <= 30 ? '🔴' : '🟡';
-      const div = document.createElement('div');
-      div.className = `yearly-alert ${alertClass}`;
-      div.innerHTML = `${icon} <strong>${esc(item.name || 'Unnamed')}</strong> — £${(item.cost || 0).toFixed(2)} due in ${status.daysUntil} days (${formatDate(item.dueDate)})`;
-      container.appendChild(div);
+      alerts.push({ item, status });
     }
+  });
+
+  // Sort most urgent first
+  alerts.sort((a, b) => a.status.daysUntil - b.status.daysUntil);
+
+  alerts.forEach(({ item, status }) => {
+    const alertClass = status.daysUntil <= 30 ? 'danger' : 'warning';
+    const div = document.createElement('div');
+    div.className = `yearly-alert ${alertClass}`;
+    div.innerHTML = `
+      <div class="alert-days">${status.daysUntil}<small>days</small></div>
+      <div class="alert-detail">
+        <div class="alert-name">${esc(item.name || 'Unnamed')}</div>
+        <div class="alert-meta">£${(item.cost || 0).toFixed(2)} · Due ${formatDate(item.dueDate)}</div>
+      </div>
+    `;
+    container.appendChild(div);
   });
 }
 

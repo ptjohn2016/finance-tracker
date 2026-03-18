@@ -1005,13 +1005,13 @@
       <table class="expense-table" id="table-yearly">
         <thead>
           <tr>
-            <th style="width:15%">Name</th>
-            <th style="width:15%">Description</th>
+            <th style="width:14%">Name</th>
+            <th style="width:14%">Description</th>
             <th style="width:10%">Bank</th>
             <th style="width:9%" class="right">Cost (£)</th>
-            <th style="width:9%">Type</th>
-            <th style="width:14%">Due Date</th>
-            <th style="width:13%">Status</th>
+            <th style="width:8%">Type</th>
+            <th style="width:13%">Due Date</th>
+            <th style="width:16%">Status</th>
             <th style="width:36px"></th>
           </tr>
         </thead>
@@ -1247,7 +1247,7 @@ function renderTable(type) {
         <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)" style="color:${dir === 'in' ? 'var(--accent-emerald)' : 'var(--text-primary)'}"></td>
         <td>${getDirectionToggle(type, idx, dir)}</td>
         <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
-        <td>${statusInfo.badge}</td>
+        <td style="padding-left:10px">${statusInfo.badge}</td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
     } else if (type === 'transfers') {

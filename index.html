@@ -572,24 +572,10 @@
     vertical-align: middle;
   }
 
-  /* Yearly table: ensure status never overlaps due date */
-  .yearly-table {
-    table-layout: fixed;
+  .due-date-cell {
+    vertical-align: top;
+    padding-top: 10px !important;
   }
-  .yearly-table th:nth-child(1),
-  .yearly-table td:nth-child(1) { width: 16%; }
-  .yearly-table th:nth-child(2),
-  .yearly-table td:nth-child(2) { width: 16%; }
-  .yearly-table th:nth-child(3),
-  .yearly-table td:nth-child(3) { width: 11%; }
-  .yearly-table th:nth-child(4),
-  .yearly-table td:nth-child(4) { width: 10%; }
-  .yearly-table th:nth-child(5),
-  .yearly-table td:nth-child(5) { width: 16%; }
-  .yearly-table th:nth-child(6),
-  .yearly-table td:nth-child(6) { width: 18%; overflow: hidden; }
-  .yearly-table th:nth-child(7),
-  .yearly-table td:nth-child(7) { width: 36px; }
 
   .expense-table tr.expense-row {
     transition: background 0.12s;
@@ -1020,15 +1006,14 @@
       </div>
     </div>
     <div class="table-scroll">
-      <table class="expense-table yearly-table" id="table-yearly">
+      <table class="expense-table" id="table-yearly">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Bank</th>
-            <th class="right">Cost (£)</th>
-            <th>Due Date</th>
-            <th>Status</th>
+            <th style="width:17%">Name</th>
+            <th style="width:17%">Description</th>
+            <th style="width:12%">Bank</th>
+            <th style="width:11%" class="right">Cost (£)</th>
+            <th style="width:30%">Due Date</th>
             <th style="width:36px"></th>
           </tr>
         </thead>
@@ -1236,7 +1221,7 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 7 : (type === 'transfers' ? 7 : 9);
+    const colspan = type === 'yearly' ? 6 : (type === 'transfers' ? 7 : 9);
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
@@ -1262,8 +1247,10 @@ function renderTable(type) {
         <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Annual premium" onchange="updateField('${type}',${idx},'description',this.value)"></td>
         <td>${getBankSelect(type, idx, item.bank)}</td>
         <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
-        <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
-        <td style="padding-left:8px">${statusInfo.badge}</td>
+        <td class="due-date-cell">
+          <input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">
+          <div style="margin-top:6px">${statusInfo.badge}</div>
+        </td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
     } else if (type === 'transfers') {

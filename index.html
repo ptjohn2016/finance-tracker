@@ -719,12 +719,13 @@
       <table class="expense-table" id="table-debits">
         <thead>
           <tr>
-            <th style="width:25%">Name</th>
-            <th style="width:16%">Bank</th>
-            <th style="width:12%" class="right">Cost (£)</th>
-            <th style="width:10%">Day</th>
-            <th style="width:14%">Status</th>
-            <th style="width:14%" class="right">Running Total</th>
+            <th style="width:18%">Name</th>
+            <th style="width:18%">Description</th>
+            <th style="width:12%">Bank</th>
+            <th style="width:10%" class="right">Cost (£)</th>
+            <th style="width:8%">Day</th>
+            <th style="width:13%">Status</th>
+            <th style="width:12%" class="right">Running Total</th>
             <th style="width:40px"></th>
           </tr>
         </thead>
@@ -746,12 +747,13 @@
       <table class="expense-table" id="table-transfers">
         <thead>
           <tr>
-            <th style="width:25%">Name</th>
-            <th style="width:16%">Bank</th>
-            <th style="width:12%" class="right">Cost (£)</th>
-            <th style="width:10%">Day</th>
-            <th style="width:14%">Status</th>
-            <th style="width:14%" class="right">Running Total</th>
+            <th style="width:18%">Name</th>
+            <th style="width:18%">Description</th>
+            <th style="width:12%">Bank</th>
+            <th style="width:10%" class="right">Cost (£)</th>
+            <th style="width:8%">Day</th>
+            <th style="width:13%">Status</th>
+            <th style="width:12%" class="right">Running Total</th>
             <th style="width:40px"></th>
           </tr>
         </thead>
@@ -773,11 +775,12 @@
       <table class="expense-table" id="table-yearly">
         <thead>
           <tr>
-            <th style="width:25%">Name</th>
-            <th style="width:16%">Bank</th>
-            <th style="width:12%" class="right">Cost (£)</th>
-            <th style="width:18%">Due Date</th>
-            <th style="width:14%">Status</th>
+            <th style="width:18%">Name</th>
+            <th style="width:18%">Description</th>
+            <th style="width:12%">Bank</th>
+            <th style="width:10%" class="right">Cost (£)</th>
+            <th style="width:16%">Due Date</th>
+            <th style="width:13%">Status</th>
             <th style="width:40px"></th>
           </tr>
         </thead>
@@ -914,7 +917,7 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 6 : 7;
+    const colspan = type === 'yearly' ? 7 : 8;
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
@@ -936,6 +939,7 @@ function renderTable(type) {
       const statusInfo = getYearlyStatus(item.dueDate);
       tr.innerHTML = `
         <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Car Insurance" onchange="updateField('${type}',${idx},'name',this.value)"></td>
+        <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Annual premium" onchange="updateField('${type}',${idx},'description',this.value)"></td>
         <td><input type="text" value="${esc(item.bank)}" placeholder="e.g. Barclays" onchange="updateField('${type}',${idx},'bank',this.value)"></td>
         <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
         <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
@@ -947,6 +951,7 @@ function renderTable(type) {
       const statusInfo = getMonthlyStatus(item.day);
       tr.innerHTML = `
         <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Netflix" onchange="updateField('${type}',${idx},'name',this.value)"></td>
+        <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Apple.com/bill → YouTube" onchange="updateField('${type}',${idx},'description',this.value)"></td>
         <td><input type="text" value="${esc(item.bank)}" placeholder="e.g. Monzo" onchange="updateField('${type}',${idx},'bank',this.value)"></td>
         <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
         <td><input type="number" min="1" max="31" value="${item.day || ''}" placeholder="1" onchange="updateDay('${type}',${idx},this.value)"></td>

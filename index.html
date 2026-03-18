@@ -308,25 +308,88 @@
     margin-left: auto;
   }
 
-  .salary-date-wrap {
-    min-width: 140px;
-  }
-
-  .salary-date-wrap input {
-    width: 100%;
-    padding: 12px 14px;
-    background: var(--bg-input);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
+  .payday-badge {
+    padding: 10px 18px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 50px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.15s;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent-blue);
+    white-space: nowrap;
   }
 
-  .salary-date-wrap input:focus {
-    border-color: var(--accent-blue);
+  /* ---- Bank Select with Icon ---- */
+  .bank-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bank-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 0.7rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .bank-icon.barclays {
+    background: #00aeef;
+    color: #fff;
+  }
+
+  .bank-icon.starling {
+    background: #7433ff;
+    color: #fff;
+  }
+
+  .bank-icon.none {
+    background: rgba(100, 116, 139, 0.2);
+    color: var(--text-muted);
+  }
+
+  /* ---- Income/Outgoing Toggle ---- */
+  .direction-toggle {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 50px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    background: var(--bg-input);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .direction-toggle .toggle-opt {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: background 0.15s, color 0.15s;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .direction-toggle .toggle-opt.active-out {
+    background: rgba(244, 63, 94, 0.2);
+    color: var(--accent-rose);
+  }
+
+  .direction-toggle .toggle-opt.active-in {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-emerald);
   }
 
   /* ---- Section ---- */
@@ -700,10 +763,8 @@
     <div class="salary-input-wrap">
       <input type="text" id="salary-input" placeholder="0.00" inputmode="decimal">
     </div>
-    <span class="salary-date-label">Pay day (day of month):</span>
-    <div class="salary-date-wrap">
-      <input type="number" id="payday-input" min="1" max="31" placeholder="25">
-    </div>
+    <span class="salary-date-label">Pay day:</span>
+    <div class="payday-badge" id="payday-badge"></div>
   </div>
 
   <!-- Direct Debits -->
@@ -719,14 +780,15 @@
       <table class="expense-table" id="table-debits">
         <thead>
           <tr>
-            <th style="width:18%">Name</th>
-            <th style="width:18%">Description</th>
-            <th style="width:12%">Bank</th>
-            <th style="width:10%" class="right">Cost (£)</th>
-            <th style="width:8%">Day</th>
+            <th style="width:15%">Name</th>
+            <th style="width:15%">Description</th>
+            <th style="width:10%">Bank</th>
+            <th style="width:9%" class="right">Cost (£)</th>
+            <th style="width:9%">Type</th>
+            <th style="width:6%">Day</th>
             <th style="width:13%">Status</th>
-            <th style="width:12%" class="right">Running Total</th>
-            <th style="width:40px"></th>
+            <th style="width:11%" class="right">Running Total</th>
+            <th style="width:36px"></th>
           </tr>
         </thead>
         <tbody id="tbody-debits"></tbody>
@@ -747,14 +809,15 @@
       <table class="expense-table" id="table-transfers">
         <thead>
           <tr>
-            <th style="width:18%">Name</th>
-            <th style="width:18%">Description</th>
-            <th style="width:12%">Bank</th>
-            <th style="width:10%" class="right">Cost (£)</th>
-            <th style="width:8%">Day</th>
+            <th style="width:15%">Name</th>
+            <th style="width:15%">Description</th>
+            <th style="width:10%">Bank</th>
+            <th style="width:9%" class="right">Cost (£)</th>
+            <th style="width:9%">Type</th>
+            <th style="width:6%">Day</th>
             <th style="width:13%">Status</th>
-            <th style="width:12%" class="right">Running Total</th>
-            <th style="width:40px"></th>
+            <th style="width:11%" class="right">Running Total</th>
+            <th style="width:36px"></th>
           </tr>
         </thead>
         <tbody id="tbody-transfers"></tbody>
@@ -775,13 +838,14 @@
       <table class="expense-table" id="table-yearly">
         <thead>
           <tr>
-            <th style="width:18%">Name</th>
-            <th style="width:18%">Description</th>
-            <th style="width:12%">Bank</th>
-            <th style="width:10%" class="right">Cost (£)</th>
-            <th style="width:16%">Due Date</th>
+            <th style="width:15%">Name</th>
+            <th style="width:15%">Description</th>
+            <th style="width:10%">Bank</th>
+            <th style="width:9%" class="right">Cost (£)</th>
+            <th style="width:9%">Type</th>
+            <th style="width:14%">Due Date</th>
             <th style="width:13%">Status</th>
-            <th style="width:40px"></th>
+            <th style="width:36px"></th>
           </tr>
         </thead>
         <tbody id="tbody-yearly"></tbody>
@@ -902,9 +966,56 @@ function showSaveIndicator() {
 }
 
 // ---- Rendering ----
+function getPenultimateDay(year, month) {
+  // Last day of month, then subtract 1
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  return lastDay - 1;
+}
+
+function updatePaydayBadge() {
+  const now = new Date();
+  const penDay = getPenultimateDay(now.getFullYear(), now.getMonth());
+  const monthName = now.toLocaleString('en-GB', { month: 'long' });
+  document.getElementById('payday-badge').textContent = `${getOrdinal(penDay)} ${monthName}`;
+  data.payday = penDay;
+}
+
+function getBankIcon(bank) {
+  const b = (bank || '').toLowerCase();
+  if (b === 'barclays') {
+    return `<span class="bank-icon barclays" title="Barclays"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="white" opacity="0.9"/><path d="M12 4l7 3.5v9L12 20l-7-3.5v-9L12 4z" fill="#00aeef"/><path d="M12 8l4 2v4l-4 2-4-2v-4l4-2z" fill="white"/></svg></span>`;
+  } else if (b === 'starling' || b === 'starling bank') {
+    return `<span class="bank-icon starling" title="Starling"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" fill="white" opacity="0.9"/><circle cx="12" cy="12" r="5" fill="#7433ff"/><circle cx="12" cy="12" r="2" fill="white"/></svg></span>`;
+  }
+  return `<span class="bank-icon none">—</span>`;
+}
+
+function getBankSelect(type, idx, currentValue) {
+  const banks = ['', 'Barclays', 'Starling'];
+  const icon = getBankIcon(currentValue);
+  return `<div class="bank-cell">${icon}<select onchange="updateField('${type}',${idx},'bank',this.value)">
+    ${banks.map(b => `<option value="${b}" ${b === currentValue ? 'selected' : ''}>${b || '— Select —'}</option>`).join('')}
+  </select></div>`;
+}
+
+function getDirectionToggle(type, idx, direction) {
+  const dir = direction || 'out';
+  return `<div class="direction-toggle">
+    <button class="toggle-opt ${dir === 'out' ? 'active-out' : ''}" onclick="setDirection('${type}',${idx},'out')">Out</button>
+    <button class="toggle-opt ${dir === 'in' ? 'active-in' : ''}" onclick="setDirection('${type}',${idx},'in')">In</button>
+  </div>`;
+}
+
+function setDirection(type, idx, dir) {
+  data[type][idx].direction = dir;
+  renderTable(type);
+  recalculate();
+  scheduleSave();
+}
+
 function renderAll() {
   document.getElementById('salary-input').value = data.salary ? data.salary.toFixed(2) : '';
-  document.getElementById('payday-input').value = data.payday || '';
+  updatePaydayBadge();
   renderTable('debits');
   renderTable('transfers');
   renderTable('yearly');
@@ -917,7 +1028,7 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 7 : 8;
+    const colspan = type === 'yearly' ? 8 : 9;
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
@@ -934,26 +1045,34 @@ function renderTable(type) {
     const idx = item._origIdx;
     const tr = document.createElement('tr');
     tr.className = 'expense-row';
+    const dir = item.direction || 'out';
 
     if (type === 'yearly') {
       const statusInfo = getYearlyStatus(item.dueDate);
       tr.innerHTML = `
         <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Car Insurance" onchange="updateField('${type}',${idx},'name',this.value)"></td>
         <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Annual premium" onchange="updateField('${type}',${idx},'description',this.value)"></td>
-        <td><input type="text" value="${esc(item.bank)}" placeholder="e.g. Barclays" onchange="updateField('${type}',${idx},'bank',this.value)"></td>
-        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
+        <td>${getBankSelect(type, idx, item.bank)}</td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)" style="color:${dir === 'in' ? 'var(--accent-emerald)' : 'var(--text-primary)'}"></td>
+        <td>${getDirectionToggle(type, idx, dir)}</td>
         <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
         <td>${statusInfo.badge}</td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
     } else {
-      runningTotal += (item.cost || 0);
+      const amount = item.cost || 0;
+      if (dir === 'in') {
+        runningTotal -= amount;
+      } else {
+        runningTotal += amount;
+      }
       const statusInfo = getMonthlyStatus(item.day);
       tr.innerHTML = `
         <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Netflix" onchange="updateField('${type}',${idx},'name',this.value)"></td>
         <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Apple.com/bill → YouTube" onchange="updateField('${type}',${idx},'description',this.value)"></td>
-        <td><input type="text" value="${esc(item.bank)}" placeholder="e.g. Monzo" onchange="updateField('${type}',${idx},'bank',this.value)"></td>
-        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
+        <td>${getBankSelect(type, idx, item.bank)}</td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)" style="color:${dir === 'in' ? 'var(--accent-emerald)' : 'var(--text-primary)'}"></td>
+        <td>${getDirectionToggle(type, idx, dir)}</td>
         <td><input type="number" min="1" max="31" value="${item.day || ''}" placeholder="1" onchange="updateDay('${type}',${idx},this.value)"></td>
         <td>${statusInfo.badge}</td>
         <td class="running-total">£${runningTotal.toFixed(2)}</td>
@@ -1019,26 +1138,36 @@ function getOrdinal(n) {
 }
 
 // ---- Calculations ----
-function recalculate() {
-  const totalDebits = data.debits.reduce((s, r) => s + (r.cost || 0), 0);
-  const totalTransfers = data.transfers.reduce((s, r) => s + (r.cost || 0), 0);
-  const remaining = data.salary - totalDebits - totalTransfers;
+function calcNet(items) {
+  return items.reduce((s, r) => {
+    const amount = r.cost || 0;
+    return s + (r.direction === 'in' ? -amount : amount);
+  }, 0);
+}
 
-  // Spent so far: sum of debits and transfers whose day has passed
+function recalculate() {
+  const netDebits = calcNet(data.debits);
+  const netTransfers = calcNet(data.transfers);
+  const remaining = data.salary - netDebits - netTransfers;
+
+  // Spent so far: sum of debits whose day has passed + all transfers
   const today = new Date().getDate();
-  const spentDebits = data.debits.filter(r => r.day && r.day <= today).reduce((s, r) => s + (r.cost || 0), 0);
-  const spentTransfers = data.transfers.reduce((s, r) => s + (r.cost || 0), 0); // Manual transfers usually all go out at once
+  const spentDebits = data.debits.filter(r => r.day && r.day <= today).reduce((s, r) => {
+    const amount = r.cost || 0;
+    return s + (r.direction === 'in' ? -amount : amount);
+  }, 0);
+  const spentTransfers = calcNet(data.transfers);
   const spent = spentDebits + spentTransfers;
 
-  const totalYearly = data.yearly.reduce((s, r) => s + (r.cost || 0), 0);
+  const totalYearly = calcNet(data.yearly);
 
   document.getElementById('sum-salary').textContent = `£${data.salary.toFixed(2)}`;
-  document.getElementById('sum-debits').textContent = `£${totalDebits.toFixed(2)}`;
-  document.getElementById('sum-transfers').textContent = `£${totalTransfers.toFixed(2)}`;
+  document.getElementById('sum-debits').textContent = `£${netDebits.toFixed(2)}`;
+  document.getElementById('sum-transfers').textContent = `£${netTransfers.toFixed(2)}`;
   document.getElementById('sum-spent').textContent = `£${spent.toFixed(2)}`;
   document.getElementById('sum-remaining').textContent = `£${remaining.toFixed(2)}`;
-  document.getElementById('total-debits').textContent = `£${totalDebits.toFixed(2)}`;
-  document.getElementById('total-transfers').textContent = `£${totalTransfers.toFixed(2)}`;
+  document.getElementById('total-debits').textContent = `£${netDebits.toFixed(2)}`;
+  document.getElementById('total-transfers').textContent = `£${netTransfers.toFixed(2)}`;
   document.getElementById('total-yearly').textContent = `£${totalYearly.toFixed(2)}`;
 
   const card = document.getElementById('remaining-card');
@@ -1075,9 +1204,9 @@ function formatDate(dateStr) {
 // ---- CRUD ----
 function addRow(type) {
   if (type === 'yearly') {
-    data[type].push({ name: '', bank: '', cost: 0, dueDate: '' });
+    data[type].push({ name: '', description: '', bank: '', cost: 0, dueDate: '', direction: 'out' });
   } else {
-    data[type].push({ name: '', bank: '', cost: 0, day: null });
+    data[type].push({ name: '', description: '', bank: '', cost: 0, day: null, direction: 'out' });
   }
   renderTable(type);
   recalculate();
@@ -1093,6 +1222,7 @@ function deleteRow(type, idx) {
 
 function updateField(type, idx, field, value) {
   data[type][idx][field] = value;
+  if (field === 'bank') renderTable(type);
   if (type === 'yearly') renderYearlyAlerts();
   scheduleSave();
 }
@@ -1115,11 +1245,6 @@ function updateDay(type, idx, value) {
 document.getElementById('salary-input').addEventListener('input', function () {
   data.salary = parseFloat(this.value) || 0;
   recalculate();
-  scheduleSave();
-});
-
-document.getElementById('payday-input').addEventListener('input', function () {
-  data.payday = parseInt(this.value) || 25;
   scheduleSave();
 });
 

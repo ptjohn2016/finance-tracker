@@ -977,13 +977,12 @@
       <table class="expense-table" id="table-transfers">
         <thead>
           <tr>
-            <th style="width:16%">Name</th>
-            <th style="width:16%">Description</th>
-            <th style="width:11%">Bank</th>
-            <th style="width:10%" class="right">Cost (£)</th>
-            <th style="width:9%">Type</th>
-            <th style="width:14%">Starling Space</th>
-            <th style="width:12%" class="right">Running Total</th>
+            <th style="width:18%">Name</th>
+            <th style="width:18%">Description</th>
+            <th style="width:12%">Bank</th>
+            <th style="width:11%" class="right">Cost (£)</th>
+            <th style="width:16%">Starling Space</th>
+            <th style="width:13%" class="right">Running Total</th>
             <th style="width:36px"></th>
           </tr>
         </thead>
@@ -1005,13 +1004,12 @@
       <table class="expense-table" id="table-yearly">
         <thead>
           <tr>
-            <th style="width:14%">Name</th>
-            <th style="width:14%">Description</th>
-            <th style="width:10%">Bank</th>
-            <th style="width:9%" class="right">Cost (£)</th>
-            <th style="width:8%">Type</th>
-            <th style="width:13%">Due Date</th>
-            <th style="width:16%">Status</th>
+            <th style="width:16%">Name</th>
+            <th style="width:16%">Description</th>
+            <th style="width:11%">Bank</th>
+            <th style="width:10%" class="right">Cost (£)</th>
+            <th style="width:15%">Due Date</th>
+            <th style="width:18%">Status</th>
             <th style="width:36px"></th>
           </tr>
         </thead>
@@ -1219,7 +1217,7 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 8 : (type === 'transfers' ? 8 : 9);
+    const colspan = type === 'yearly' ? 7 : (type === 'transfers' ? 7 : 9);
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
@@ -1244,26 +1242,19 @@ function renderTable(type) {
         <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Car Insurance" onchange="updateField('${type}',${idx},'name',this.value)"></td>
         <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Annual premium" onchange="updateField('${type}',${idx},'description',this.value)"></td>
         <td>${getBankSelect(type, idx, item.bank)}</td>
-        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)" style="color:${dir === 'in' ? 'var(--accent-emerald)' : 'var(--text-primary)'}"></td>
-        <td>${getDirectionToggle(type, idx, dir)}</td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
         <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
-        <td style="padding-left:10px">${statusInfo.badge}</td>
+        <td style="padding-left:8px">${statusInfo.badge}</td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
     } else if (type === 'transfers') {
-      const amount = item.cost || 0;
-      if (dir === 'in') {
-        runningTotal -= amount;
-      } else {
-        runningTotal += amount;
-      }
+      runningTotal += (item.cost || 0);
       const isStarling = (item.bank || '').toLowerCase() === 'starling';
       tr.innerHTML = `
         <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Joint Account" onchange="updateField('${type}',${idx},'name',this.value)"></td>
         <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Bills contribution" onchange="updateField('${type}',${idx},'description',this.value)"></td>
         <td>${getBankSelect(type, idx, item.bank)}</td>
-        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)" style="color:${dir === 'in' ? 'var(--accent-emerald)' : 'var(--text-primary)'}"></td>
-        <td>${getDirectionToggle(type, idx, dir)}</td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
         <td><input type="text" value="${esc(item.starlingSpace || '')}" placeholder="${isStarling ? 'e.g. Holidays' : '—'}" ${!isStarling ? 'disabled style="opacity:0.3"' : ''} onchange="updateField('${type}',${idx},'starlingSpace',this.value)"></td>
         <td class="running-total">£${runningTotal.toFixed(2)}</td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
@@ -1319,7 +1310,7 @@ function getMonthlyStatus(day) {
 }
 
 function getYearlyStatus(dateStr) {
-  if (!dateStr) return { badge: '<span class="date-badge far"><span class="indicator"></span>No date</span>', class: 'far', daysUntil: Infinity };
+  if (!dateStr) return { badge: '<span class="date-badge far"><span class="indicator"></span>—</span>', class: 'far', daysUntil: Infinity };
 
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -1330,13 +1321,14 @@ function getYearlyStatus(dateStr) {
   if (diffDays < 0) {
     return { badge: `<span class="date-badge past"><span class="indicator"></span>Passed</span>`, class: 'past', daysUntil: diffDays };
   } else if (diffDays === 0) {
-    return { badge: `<span class="date-badge today"><span class="indicator"></span>TODAY</span>`, class: 'today', daysUntil: 0 };
+    return { badge: `<span class="date-badge today"><span class="indicator"></span>Today</span>`, class: 'today', daysUntil: 0 };
   } else if (diffDays <= 30) {
-    return { badge: `<span class="date-badge today"><span class="indicator"></span>${diffDays}d away</span>`, class: 'today', daysUntil: diffDays };
+    return { badge: `<span class="date-badge today"><span class="indicator"></span>${diffDays}d</span>`, class: 'today', daysUntil: diffDays };
   } else if (diffDays <= 90) {
-    return { badge: `<span class="date-badge soon"><span class="indicator"></span>${diffDays}d away</span>`, class: 'soon', daysUntil: diffDays };
+    return { badge: `<span class="date-badge soon"><span class="indicator"></span>${diffDays}d</span>`, class: 'soon', daysUntil: diffDays };
   } else {
-    return { badge: `<span class="date-badge far"><span class="indicator"></span>${diffDays}d away</span>`, class: 'far', daysUntil: diffDays };
+    const months = Math.round(diffDays / 30.44);
+    return { badge: `<span class="date-badge far"><span class="indicator"></span>~${months}mo</span>`, class: 'far', daysUntil: diffDays };
   }
 }
 

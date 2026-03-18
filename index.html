@@ -392,6 +392,29 @@
     color: var(--accent-emerald);
   }
 
+  .transfers-payday-note {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    padding: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .transfers-payday-note .payday-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 50px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--accent-violet);
+  }
+
   /* ---- Section ---- */
   .section {
     background: var(--bg-card);
@@ -744,7 +767,7 @@
       <div class="summary-value" id="sum-debits">£0.00</div>
     </div>
     <div class="summary-card transfers">
-      <div class="summary-label">Joint Account</div>
+      <div class="summary-label">Manual Transfers</div>
       <div class="summary-value" id="sum-transfers">£0.00</div>
     </div>
     <div class="summary-card spent">
@@ -799,24 +822,24 @@
   <!-- Manual Transfers -->
   <div class="section" id="section-transfers">
     <div class="section-header">
-      <div class="section-title"><span class="dot violet"></span> Manual Transfers (Joint Account)</div>
+      <div class="section-title"><span class="dot violet"></span> Manual Transfers</div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="section-total" id="total-transfers">£0.00</div>
         <button class="btn-add" onclick="addRow('transfers')">＋ Add</button>
       </div>
     </div>
+    <div class="transfers-payday-note" id="transfers-payday-note"></div>
     <div class="table-scroll">
       <table class="expense-table" id="table-transfers">
         <thead>
           <tr>
-            <th style="width:15%">Name</th>
-            <th style="width:15%">Description</th>
-            <th style="width:10%">Bank</th>
-            <th style="width:9%" class="right">Cost (£)</th>
+            <th style="width:16%">Name</th>
+            <th style="width:16%">Description</th>
+            <th style="width:11%">Bank</th>
+            <th style="width:10%" class="right">Cost (£)</th>
             <th style="width:9%">Type</th>
-            <th style="width:6%">Day</th>
-            <th style="width:13%">Status</th>
-            <th style="width:11%" class="right">Running Total</th>
+            <th style="width:14%">Starling Space</th>
+            <th style="width:12%" class="right">Running Total</th>
             <th style="width:36px"></th>
           </tr>
         </thead>
@@ -967,17 +990,38 @@ function showSaveIndicator() {
 
 // ---- Rendering ----
 function getPenultimateDay(year, month) {
-  // Last day of month, then subtract 1
   const lastDay = new Date(year, month + 1, 0).getDate();
   return lastDay - 1;
 }
 
+function getActualPayday(year, month) {
+  const penDay = getPenultimateDay(year, month);
+  const date = new Date(year, month, penDay);
+  const dow = date.getDay(); // 0=Sun, 6=Sat
+  if (dow === 6) return penDay - 1; // Saturday → Friday
+  if (dow === 0) return penDay - 2; // Sunday → Friday
+  return penDay;
+}
+
+function getPaydayDate() {
+  const now = new Date();
+  const day = getActualPayday(now.getFullYear(), now.getMonth());
+  return { day, date: new Date(now.getFullYear(), now.getMonth(), day) };
+}
+
 function updatePaydayBadge() {
   const now = new Date();
-  const penDay = getPenultimateDay(now.getFullYear(), now.getMonth());
-  const monthName = now.toLocaleString('en-GB', { month: 'long' });
-  document.getElementById('payday-badge').textContent = `${getOrdinal(penDay)} ${monthName}`;
-  data.payday = penDay;
+  const { day, date } = getPaydayDate();
+  const monthName = date.toLocaleString('en-GB', { month: 'long' });
+  const dayName = date.toLocaleString('en-GB', { weekday: 'long' });
+  document.getElementById('payday-badge').textContent = `${dayName} ${getOrdinal(day)} ${monthName}`;
+  data.payday = day;
+
+  // Update the transfers note
+  const note = document.getElementById('transfers-payday-note');
+  if (note) {
+    note.innerHTML = `Transferred on payday: <span class="payday-chip">${dayName} ${getOrdinal(day)} ${monthName}</span>`;
+  }
 }
 
 function getBankIcon(bank) {
@@ -1028,14 +1072,14 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 8 : 9;
+    const colspan = type === 'yearly' ? 8 : (type === 'transfers' ? 8 : 9);
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
 
-  // Sort by day/date for running totals
+  // Sort by day/date for running totals (not transfers — they all go on payday)
   const sorted = items.map((item, i) => ({ ...item, _origIdx: i }));
-  if (type !== 'yearly') {
+  if (type === 'debits') {
     sorted.sort((a, b) => (a.day || 0) - (b.day || 0));
   }
 
@@ -1057,6 +1101,24 @@ function renderTable(type) {
         <td>${getDirectionToggle(type, idx, dir)}</td>
         <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
         <td>${statusInfo.badge}</td>
+        <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
+      `;
+    } else if (type === 'transfers') {
+      const amount = item.cost || 0;
+      if (dir === 'in') {
+        runningTotal -= amount;
+      } else {
+        runningTotal += amount;
+      }
+      const isStarling = (item.bank || '').toLowerCase() === 'starling';
+      tr.innerHTML = `
+        <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Joint Account" onchange="updateField('${type}',${idx},'name',this.value)"></td>
+        <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Bills contribution" onchange="updateField('${type}',${idx},'description',this.value)"></td>
+        <td>${getBankSelect(type, idx, item.bank)}</td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)" style="color:${dir === 'in' ? 'var(--accent-emerald)' : 'var(--text-primary)'}"></td>
+        <td>${getDirectionToggle(type, idx, dir)}</td>
+        <td><input type="text" value="${esc(item.starlingSpace || '')}" placeholder="${isStarling ? 'e.g. Holidays' : '—'}" ${!isStarling ? 'disabled style="opacity:0.3"' : ''} onchange="updateField('${type}',${idx},'starlingSpace',this.value)"></td>
+        <td class="running-total">£${runningTotal.toFixed(2)}</td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
     } else {
@@ -1205,6 +1267,8 @@ function formatDate(dateStr) {
 function addRow(type) {
   if (type === 'yearly') {
     data[type].push({ name: '', description: '', bank: '', cost: 0, dueDate: '', direction: 'out' });
+  } else if (type === 'transfers') {
+    data[type].push({ name: '', description: '', bank: '', cost: 0, direction: 'out', starlingSpace: '' });
   } else {
     data[type].push({ name: '', description: '', bank: '', cost: 0, day: null, direction: 'out' });
   }

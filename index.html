@@ -240,9 +240,16 @@
   /* ---- Summary Bar ---- */
   .summary-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
     margin-bottom: 28px;
+  }
+
+  @media (max-width: 1100px) {
+    .summary-bar { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
   }
 
   .summary-card {
@@ -253,7 +260,7 @@
     border-top-color: var(--glass-highlight);
     border-left-color: var(--glass-highlight);
     border-radius: var(--radius);
-    padding: 20px 24px;
+    padding: 16px 16px;
     box-shadow: var(--glass-shadow);
     position: relative;
     overflow: hidden;
@@ -284,7 +291,7 @@
 
   .summary-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     font-weight: 700;
   }
 

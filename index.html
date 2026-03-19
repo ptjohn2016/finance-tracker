@@ -271,6 +271,7 @@
   .summary-card.transfers::before { background: linear-gradient(90deg, var(--accent-violet), var(--accent-blue)); }
   .summary-card.remaining::before { background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan)); }
   .summary-card.spent::before { background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose)); }
+  .summary-card.buffer::before { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald)); }
 
   .summary-label {
     font-size: 0.75rem;
@@ -293,6 +294,8 @@
   .summary-card.remaining .summary-value { color: var(--accent-emerald); }
   .summary-card.remaining.negative .summary-value { color: var(--accent-rose); }
   .summary-card.spent .summary-value { color: var(--accent-amber); }
+  .summary-card.buffer .summary-value { color: var(--accent-cyan); }
+  .summary-card.buffer.negative .summary-value { color: var(--accent-rose); }
 
   /* ---- Salary Input ---- */
   .salary-section {
@@ -375,6 +378,22 @@
     font-size: 0.95rem;
     color: var(--accent-blue);
     white-space: nowrap;
+  }
+
+  .salary-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--glass-border);
+    margin: 0 8px;
+    flex-shrink: 0;
+  }
+
+  .carryover-wrap {
+    max-width: 200px;
+  }
+
+  .carryover-wrap::before {
+    color: var(--accent-cyan) !important;
   }
 
   /* ---- Bank Select with Icon ---- */
@@ -572,24 +591,10 @@
     vertical-align: middle;
   }
 
-  /* Yearly table: ensure status never overlaps due date */
-  .yearly-table {
-    table-layout: fixed;
+  .due-date-cell {
+    vertical-align: top;
+    padding-top: 10px !important;
   }
-  .yearly-table th:nth-child(1),
-  .yearly-table td:nth-child(1) { width: 16%; }
-  .yearly-table th:nth-child(2),
-  .yearly-table td:nth-child(2) { width: 16%; }
-  .yearly-table th:nth-child(3),
-  .yearly-table td:nth-child(3) { width: 11%; }
-  .yearly-table th:nth-child(4),
-  .yearly-table td:nth-child(4) { width: 10%; }
-  .yearly-table th:nth-child(5),
-  .yearly-table td:nth-child(5) { width: 16%; }
-  .yearly-table th:nth-child(6),
-  .yearly-table td:nth-child(6) { width: 18%; overflow: hidden; }
-  .yearly-table th:nth-child(7),
-  .yearly-table td:nth-child(7) { width: 36px; }
 
   .expense-table tr.expense-row {
     transition: background 0.12s;
@@ -941,9 +946,13 @@
       <div class="summary-label">Remaining Balance</div>
       <div class="summary-value" id="sum-remaining">£0.00</div>
     </div>
+    <div class="summary-card buffer" id="buffer-card">
+      <div class="summary-label">Buffer (incl. leftover)</div>
+      <div class="summary-value" id="sum-buffer">£0.00</div>
+    </div>
   </div>
 
-  <!-- Salary -->
+  <!-- Salary & Carryover -->
   <div class="salary-section">
     <label>Monthly Salary</label>
     <div class="salary-input-wrap">
@@ -951,6 +960,11 @@
     </div>
     <span class="salary-date-label">Pay day:</span>
     <div class="payday-badge" id="payday-badge"></div>
+    <div class="salary-divider"></div>
+    <label>Last Month's Leftover</label>
+    <div class="salary-input-wrap carryover-wrap">
+      <input type="text" id="carryover-input" placeholder="0.00" inputmode="decimal">
+    </div>
   </div>
 
   <!-- Direct Debits -->
@@ -1020,15 +1034,14 @@
       </div>
     </div>
     <div class="table-scroll">
-      <table class="expense-table yearly-table" id="table-yearly">
+      <table class="expense-table" id="table-yearly">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Bank</th>
-            <th class="right">Cost (£)</th>
-            <th>Due Date</th>
-            <th>Status</th>
+            <th style="width:17%">Name</th>
+            <th style="width:17%">Description</th>
+            <th style="width:12%">Bank</th>
+            <th style="width:11%" class="right">Cost (£)</th>
+            <th style="width:30%">Due Date</th>
             <th style="width:36px"></th>
           </tr>
         </thead>
@@ -1068,6 +1081,7 @@ let saveTimeout = null;
 let data = {
   salary: 0,
   payday: 25,
+  carryover: 0,
   debits: [],
   transfers: [],
   yearly: []
@@ -1110,6 +1124,7 @@ async function loadData() {
       const d = doc.data();
       data.salary = d.salary || 0;
       data.payday = d.payday || 25;
+      data.carryover = d.carryover || 0;
       data.debits = d.debits || [];
       data.transfers = d.transfers || [];
       data.yearly = d.yearly || [];
@@ -1131,6 +1146,7 @@ async function saveData() {
     await db.collection('finance_tracker').doc(currentUser.uid).set({
       salary: data.salary,
       payday: data.payday,
+      carryover: data.carryover,
       debits: data.debits,
       transfers: data.transfers,
       yearly: data.yearly,
@@ -1219,6 +1235,7 @@ function setDirection(type, idx, dir) {
 
 function renderAll() {
   document.getElementById('salary-input').value = data.salary ? data.salary.toFixed(2) : '';
+  document.getElementById('carryover-input').value = data.carryover ? data.carryover.toFixed(2) : '';
   // Set brand subtitle to current month/year
   const now = new Date();
   const monthYear = now.toLocaleString('en-GB', { month: 'long', year: 'numeric' });
@@ -1236,7 +1253,7 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 7 : (type === 'transfers' ? 7 : 9);
+    const colspan = type === 'yearly' ? 6 : (type === 'transfers' ? 7 : 9);
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
@@ -1262,8 +1279,10 @@ function renderTable(type) {
         <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Annual premium" onchange="updateField('${type}',${idx},'description',this.value)"></td>
         <td>${getBankSelect(type, idx, item.bank)}</td>
         <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
-        <td><input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;"></td>
-        <td style="padding-left:8px">${statusInfo.badge}</td>
+        <td class="due-date-cell">
+          <input type="date" value="${item.dueDate || ''}" onchange="updateField('${type}',${idx},'dueDate',this.value)" style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;">
+          <div style="margin-top:6px">${statusInfo.badge}</div>
+        </td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
     } else if (type === 'transfers') {
@@ -1393,6 +1412,12 @@ function recalculate() {
   const card = document.getElementById('remaining-card');
   card.classList.toggle('negative', remaining < 0);
 
+  // Buffer = remaining balance + last month's leftover
+  const buffer = remaining + data.carryover;
+  document.getElementById('sum-buffer').textContent = `£${buffer.toFixed(2)}`;
+  const bufferCard = document.getElementById('buffer-card');
+  bufferCard.classList.toggle('negative', buffer < 0);
+
   // Yearly alerts
   renderYearlyAlerts();
 }
@@ -1476,9 +1501,15 @@ function updateDay(type, idx, value) {
   scheduleSave();
 }
 
-// ---- Salary input ----
+// ---- Salary & Carryover inputs ----
 document.getElementById('salary-input').addEventListener('input', function () {
   data.salary = parseFloat(this.value) || 0;
+  recalculate();
+  scheduleSave();
+});
+
+document.getElementById('carryover-input').addEventListener('input', function () {
+  data.carryover = parseFloat(this.value) || 0;
   recalculate();
   scheduleSave();
 });

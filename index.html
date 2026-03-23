@@ -387,6 +387,30 @@
     white-space: nowrap;
   }
 
+  .payday-countdown {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(37, 99, 235, 0.12);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--accent-blue);
+  }
+
+  .payday-countdown.today {
+    background: rgba(5, 150, 105, 0.12);
+    color: var(--accent-emerald);
+    animation: pulse-badge 2s infinite;
+  }
+
+  .payday-countdown.past {
+    background: rgba(138, 128, 112, 0.1);
+    color: var(--text-muted);
+  }
+
   .salary-divider {
     width: 1px;
     height: 32px;
@@ -1205,7 +1229,22 @@ function updatePaydayBadge() {
   const { day, date } = getPaydayDate();
   const monthName = date.toLocaleString('en-GB', { month: 'long' });
   const dayName = date.toLocaleString('en-GB', { weekday: 'long' });
-  document.getElementById('payday-badge').textContent = `${dayName} ${getOrdinal(day)} ${monthName}`;
+
+  // Calculate days until payday
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const paydayDate = new Date(now.getFullYear(), now.getMonth(), day);
+  let daysUntil = Math.ceil((paydayDate - today) / (1000 * 60 * 60 * 24));
+
+  let countdown = '';
+  if (daysUntil < 0) {
+    countdown = '<span class="payday-countdown past">Paid</span>';
+  } else if (daysUntil === 0) {
+    countdown = '<span class="payday-countdown today">Today!</span>';
+  } else {
+    countdown = `<span class="payday-countdown">${daysUntil}d</span>`;
+  }
+
+  document.getElementById('payday-badge').innerHTML = `${dayName} ${getOrdinal(day)} ${monthName} ${countdown}`;
   data.payday = day;
 
   // Update the transfers note

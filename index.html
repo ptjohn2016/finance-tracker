@@ -572,6 +572,14 @@
   .section-title .dot.rose { background: var(--accent-rose); box-shadow: 0 0 8px rgba(220, 38, 38, 0.4); }
   .section-title .dot.violet { background: var(--accent-violet); box-shadow: 0 0 8px rgba(124, 58, 237, 0.4); }
   .section-title .dot.amber { background: var(--accent-amber); box-shadow: 0 0 8px rgba(217, 119, 6, 0.4); }
+  .section-title .dot.cyan { background: var(--accent-cyan); box-shadow: 0 0 8px rgba(8, 145, 178, 0.4); }
+
+  .section-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: -12px 0 16px;
+    font-style: italic;
+  }
 
   .section-total {
     font-family: 'JetBrains Mono', monospace;
@@ -1063,6 +1071,35 @@
     </div>
   </div>
 
+  <!-- Standalone Direct Debits -->
+  <div class="section" id="section-standalone">
+    <div class="section-header">
+      <div class="section-title"><span class="dot cyan"></span> Standalone Direct Debits</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="section-total" id="total-standalone">£0.00</div>
+        <button class="btn-add" onclick="addRow('standalone')">＋ Add</button>
+      </div>
+    </div>
+    <p class="section-note">Separate direct debits not funded from your main salary account</p>
+    <div class="table-scroll">
+      <table class="expense-table" id="table-standalone">
+        <thead>
+          <tr>
+            <th style="width:17%">Name</th>
+            <th style="width:17%">Description</th>
+            <th style="width:11%">Bank</th>
+            <th style="width:10%" class="right">Cost (£)</th>
+            <th style="width:7%">Day</th>
+            <th style="width:14%">Status</th>
+            <th style="width:12%" class="right">Running Total</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-standalone"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- Yearly Expenses -->
   <div class="section" id="section-yearly">
     <div class="section-header">
@@ -1123,6 +1160,7 @@ let data = {
   carryover: 0,
   debits: [],
   transfers: [],
+  standalone: [],
   yearly: []
 };
 
@@ -1166,6 +1204,7 @@ async function loadData() {
       data.carryover = d.carryover || 0;
       data.debits = d.debits || [];
       data.transfers = d.transfers || [];
+      data.standalone = d.standalone || [];
       data.yearly = d.yearly || [];
     }
   } catch (err) {
@@ -1188,6 +1227,7 @@ async function saveData() {
       carryover: data.carryover,
       debits: data.debits,
       transfers: data.transfers,
+      standalone: data.standalone,
       yearly: data.yearly,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1297,6 +1337,7 @@ function renderAll() {
   updatePaydayBadge();
   renderTable('debits');
   renderTable('transfers');
+  renderTable('standalone');
   renderTable('yearly');
   recalculate();
 }
@@ -1307,14 +1348,15 @@ function renderTable(type) {
 
   const items = data[type];
   if (!items.length) {
-    const colspan = type === 'yearly' ? 6 : (type === 'transfers' ? 7 : 9);
+    const colspans = { yearly: 6, transfers: 7, standalone: 8, debits: 9 };
+    const colspan = colspans[type] || 9;
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.9rem;">No entries yet — click <strong>＋ Add</strong> to start</td></tr>`;
     return;
   }
 
   // Sort by day/date for running totals (not transfers — they all go on payday)
   const sorted = items.map((item, i) => ({ ...item, _origIdx: i }));
-  if (type === 'debits') {
+  if (type === 'debits' || type === 'standalone') {
     sorted.sort((a, b) => (a.day || 0) - (b.day || 0));
   }
 
@@ -1348,6 +1390,19 @@ function renderTable(type) {
         <td>${getBankSelect(type, idx, item.bank)}</td>
         <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
         <td><input type="text" value="${esc(item.starlingSpace || '')}" placeholder="${isStarling ? 'e.g. Holidays' : '—'}" ${!isStarling ? 'disabled style="opacity:0.3"' : ''} onchange="updateField('${type}',${idx},'starlingSpace',this.value)"></td>
+        <td class="running-total">£${runningTotal.toFixed(2)}</td>
+        <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
+      `;
+    } else if (type === 'standalone') {
+      runningTotal += (item.cost || 0);
+      const statusInfo = getMonthlyStatus(item.day);
+      tr.innerHTML = `
+        <td><input type="text" value="${esc(item.name)}" placeholder="e.g. Council Tax" onchange="updateField('${type}',${idx},'name',this.value)"></td>
+        <td><input type="text" value="${esc(item.description || '')}" placeholder="e.g. Monthly payment" onchange="updateField('${type}',${idx},'description',this.value)"></td>
+        <td>${getBankSelect(type, idx, item.bank)}</td>
+        <td><input type="text" class="cost-input" value="${item.cost ? item.cost.toFixed(2) : ''}" placeholder="0.00" inputmode="decimal" onchange="updateCost('${type}',${idx},this.value)"></td>
+        <td><input type="number" min="1" max="31" value="${item.day || ''}" placeholder="1" onchange="updateDay('${type}',${idx},this.value)"></td>
+        <td>${statusInfo.badge}</td>
         <td class="running-total">£${runningTotal.toFixed(2)}</td>
         <td style="text-align:center"><button class="btn-delete" onclick="deleteRow('${type}',${idx})">×</button></td>
       `;
@@ -1453,6 +1508,7 @@ function recalculate() {
   const spent = spentDebits + spentTransfers;
 
   const totalYearly = calcNet(data.yearly);
+  const totalStandalone = data.standalone.reduce((s, r) => s + (r.cost || 0), 0);
 
   document.getElementById('sum-salary').textContent = `£${data.salary.toFixed(2)}`;
   document.getElementById('sum-debits').textContent = `£${netDebits.toFixed(2)}`;
@@ -1461,6 +1517,7 @@ function recalculate() {
   document.getElementById('sum-remaining').textContent = `£${remaining.toFixed(2)}`;
   document.getElementById('total-debits').textContent = `£${netDebits.toFixed(2)}`;
   document.getElementById('total-transfers').textContent = `£${netTransfers.toFixed(2)}`;
+  document.getElementById('total-standalone').textContent = `£${totalStandalone.toFixed(2)}`;
   document.getElementById('total-yearly').textContent = `£${totalYearly.toFixed(2)}`;
 
   const card = document.getElementById('remaining-card');
@@ -1519,6 +1576,8 @@ function addRow(type) {
     data[type].push({ name: '', description: '', bank: '', cost: 0, dueDate: '', direction: 'out' });
   } else if (type === 'transfers') {
     data[type].push({ name: '', description: '', bank: '', cost: 0, direction: 'out', starlingSpace: '' });
+  } else if (type === 'standalone') {
+    data[type].push({ name: '', description: '', bank: '', cost: 0, day: null });
   } else {
     data[type].push({ name: '', description: '', bank: '', cost: 0, day: null, direction: 'out' });
   }

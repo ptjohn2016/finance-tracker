@@ -433,6 +433,14 @@
     color: #fff;
   }
 
+  .bank-icon-img {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
   .bank-icon.none {
     background: rgba(138, 128, 112, 0.15);
     color: var(--text-muted);
@@ -1210,9 +1218,9 @@ function updatePaydayBadge() {
 function getBankIcon(bank) {
   const b = (bank || '').toLowerCase();
   if (b === 'barclays') {
-    return `<span class="bank-icon barclays" title="Barclays"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="white" opacity="0.9"/><path d="M12 4l7 3.5v9L12 20l-7-3.5v-9L12 4z" fill="#00aeef"/><path d="M12 8l4 2v4l-4 2-4-2v-4l4-2z" fill="white"/></svg></span>`;
+    return `<img class="bank-icon-img" src="barclays.png" alt="Barclays" title="Barclays">`;
   } else if (b === 'starling' || b === 'starling bank') {
-    return `<span class="bank-icon starling" title="Starling"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" fill="white" opacity="0.9"/><circle cx="12" cy="12" r="5" fill="#7433ff"/><circle cx="12" cy="12" r="2" fill="white"/></svg></span>`;
+    return `<img class="bank-icon-img" src="starling.png" alt="Starling" title="Starling">`;
   }
   return `<span class="bank-icon none">—</span>`;
 }

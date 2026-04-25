@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 <title>Finance Tracker</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1198,6 +1198,17 @@
   .section:nth-child(3) { animation-delay: 0.1s; }
   .section:nth-child(4) { animation-delay: 0.15s; }
 
+  /* ---- iPad/iOS Anti-Zoom Fix ---- */
+  @media (max-width: 1024px) {
+    input, 
+    select, 
+    textarea, 
+    .expense-table input, 
+    .expense-table select,
+    .salary-input-wrap input {
+      font-size: 16px !important;
+    }
+  }
   /* ---- Scrollbar ---- */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
